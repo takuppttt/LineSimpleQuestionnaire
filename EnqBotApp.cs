@@ -51,7 +51,7 @@ namespace LineSimpleQuestionnaire
                 else
                 {
                     var status = await DurableClient.GetInstanceAsync(e.Source.UserId);
-                    var index = int.TryParse(status?.SerializedCustomStatus?.ToString(), out var before) ? before + 1 : 0;
+                    var index = int.TryParse(status?.SerializedCustomStatus ?? "0", out var before) ? before + 1 : 0;
                     Logger.LogInformation($"OnMessageAsync - index: {index}");
 
                     if (_enq.Count == index + 1)

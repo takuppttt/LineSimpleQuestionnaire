@@ -29,10 +29,6 @@ public class LineSimpleQuestionnaire
         logger.LogInformation($"Orchestrator - index: {value.index}");
 
         answers.Add(value.message);
-        await _app.ReplyNextQuestionAsync(
-            value.replyToken,
-            1);
-        return;
 
         if (value.index == -1)
         {
