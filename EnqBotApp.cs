@@ -110,6 +110,12 @@ namespace LineSimpleQuestionnaire
             int index)
         {
             var next = _enq[index];
+            await Client.ReplyMessageAsync(
+                replyToken,
+                new List<ISendMessage>
+                {
+                    new TextMessage($"{index}")
+                });
 
             await Client.ReplyMessageAsync(
                 replyToken,
