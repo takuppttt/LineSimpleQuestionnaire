@@ -5,6 +5,7 @@ using LineDC.Messaging.Messages.Flex;
 using LineDC.Messaging.Webhooks;
 using LineDC.Messaging.Webhooks.Events;
 using LineDC.Messaging.Webhooks.Messages;
+using Microsoft.DurableTask;
 using Microsoft.DurableTask.Client;
 using Microsoft.Extensions.Logging;
 
@@ -39,7 +40,11 @@ namespace LineSimpleQuestionnaire
                     await DurableClient.PurgeInstanceAsync(e.Source.UserId);
                     await DurableClient.ScheduleNewOrchestrationInstanceAsync(
                         nameof(LineSimpleQuestionnaire),
-                        e.Source.UserId);
+                        input: new List<string>(),
+                        options: new StartOrchestrationOptions
+                        {
+                            InstanceId = e.Source.UserId
+                        });
 
                     await ReplyNextQuestionAsync(e.ReplyToken, 0);
                 }
