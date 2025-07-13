@@ -114,10 +114,7 @@ namespace LineSimpleQuestionnaire
             {
                 await Client.ReplyMessageAsync(
                     replyToken,
-                    new List<ISendMessage>
-                    {
-                    new TextMessage($"{index}")
-                    });
+                    $"{index}");
             }
 
             await Client.ReplyMessageAsync(
