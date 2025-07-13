@@ -60,7 +60,12 @@ namespace LineSimpleQuestionnaire
                         await DurableClient.RaiseEventAsync(
                             e.Source.UserId,
                             "answer",
-                            JsonSerializer.Serialize(new Answer(-1, textMessage.Text, e.ReplyToken)));
+                            JsonSerializer.Serialize(new Answer
+                            {
+                                Index = -1,
+                                Message = textMessage.Text,
+                                ReplyToken = e.ReplyToken
+                            }));
                     }
 
                     if (status?.RuntimeStatus == OrchestrationRuntimeStatus.Pending
@@ -69,7 +74,12 @@ namespace LineSimpleQuestionnaire
                         await DurableClient.RaiseEventAsync(
                             e.Source.UserId,
                             "answer",
-                            JsonSerializer.Serialize(new Answer(index, textMessage.Text, e.ReplyToken)));
+                            JsonSerializer.Serialize(new Answer
+                            {
+                                Index = index,
+                                Message = textMessage.Text,
+                                ReplyToken = e.ReplyToken
+                            }));
                     }
                     else
                     {
