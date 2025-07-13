@@ -51,7 +51,7 @@ namespace LineSimpleQuestionnaire
                 }
                 else
                 {
-                    var status = await DurableClient.GetInstanceAsync(e.Source.UserId);
+                    var status = await DurableClient.GetInstanceAsync(e.Source.UserId, getInputsAndOutputs: true);
                     var index = (status?.ReadCustomStatusAs<QuestionIndex>() ?? new QuestionIndex { Index = -1 } ).Index + 1;
                     Logger.LogInformation($"OnMessageAsync - index: {index}");
 
