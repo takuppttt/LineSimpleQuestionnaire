@@ -46,7 +46,7 @@ public class LineSimpleQuestionnaire
         }
         else
         {
-            context.SetCustomStatus(value.Index);
+            context.SetCustomStatus($"{value.Index}");
 
             await context.CallActivityAsync(
                 nameof(SendQuestionActivity),
