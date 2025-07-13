@@ -8,6 +8,7 @@ using LineDC.Messaging.Webhooks.Messages;
 using Microsoft.DurableTask;
 using Microsoft.DurableTask.Client;
 using Microsoft.Extensions.Logging;
+using System.Text.Json;
 
 namespace LineSimpleQuestionnaire
 {
@@ -110,12 +111,7 @@ namespace LineSimpleQuestionnaire
             int index)
         {
             var next = _enq[index];
-            if (index != 0)
-            {
-                await Client.ReplyMessageAsync(
-                    replyToken,
-                    $"{index}");
-            }
+            throw new Exception(JsonSerializer.Serialize(next));
 
             await Client.ReplyMessageAsync(
                 replyToken,
