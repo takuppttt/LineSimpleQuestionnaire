@@ -4,6 +4,7 @@ using Microsoft.DurableTask;
 using Microsoft.DurableTask.Client;
 using Microsoft.Extensions.Logging;
 using System.Net;
+using System.Text.Json;
 
 namespace LineSimpleQuestionnaire;
 
@@ -27,6 +28,7 @@ public class LineSimpleQuestionnaire
 
         var value = await context.WaitForExternalEvent<(int index, string message, string replyToken)>("answer");
         logger.LogInformation($"Orchestrator - index: {value.index}");
+        throw new Exception(JsonSerializer.Serialize(value));
 
         answers.Add(value.message);
 
