@@ -71,6 +71,7 @@ namespace LineSimpleQuestionnaire
                     if (status?.RuntimeStatus == OrchestrationRuntimeStatus.Pending
                         || status?.RuntimeStatus == OrchestrationRuntimeStatus.Running)
                     {
+                        throw new Exception($"index: {index}, message: {textMessage.Text}, replytoken: {e.ReplyToken}");
                         await DurableClient.RaiseEventAsync(
                             e.Source.UserId,
                             "answer",
