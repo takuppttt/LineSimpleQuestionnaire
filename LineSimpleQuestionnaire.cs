@@ -24,10 +24,6 @@ public class LineSimpleQuestionnaire
         ILogger logger = context.CreateReplaySafeLogger(nameof(LineSimpleQuestionnaire));
         
         var answers = context.GetInput<List<string>>() ?? new List<string>();
-        if (!answers.Any())
-        {
-            context.SetCustomStatus(0);
-        }
 
         var value = await context.WaitForExternalEvent<(int index, string message, string replyToken)>("answer");
         logger.LogInformation($"Orchestrator - index: {value.index}");
