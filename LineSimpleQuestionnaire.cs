@@ -26,7 +26,7 @@ public class LineSimpleQuestionnaire
         
         var answers = context.GetInput<List<string>>() ?? new List<string>();
 
-        var value = await context.WaitForExternalEvent<Answer>("answer");
+        var value = JsonSerializer.Deserialize<Answer>(await context.WaitForExternalEvent<string>("answer"));
         logger.LogInformation($"Orchestrator - index: {value.Index}");
 
         answers.Add(value.Message);
