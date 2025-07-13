@@ -3,52 +3,83 @@ using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.DurableTask;
 using Microsoft.DurableTask.Client;
 using Microsoft.Extensions.Logging;
+using System.Net;
 
-namespace LineSimpleQuestionnaire.Function;
+namespace LineSimpleQuestionnaire;
 
-public static class LineSimpleQuestionnaire
+public class LineSimpleQuestionnaire
 {
+    private EnqBotApp _app { get; }
+
+    public LineSimpleQuestionnaire(
+        EnqBotApp app)
+    {
+        _app = app;
+    }
+
     [Function(nameof(LineSimpleQuestionnaire))]
-    public static async Task<List<string>> RunOrchestrator(
+    public async Task RunOrchestrator(
         [OrchestrationTrigger] TaskOrchestrationContext context)
     {
         ILogger logger = context.CreateReplaySafeLogger(nameof(LineSimpleQuestionnaire));
-        logger.LogInformation("Saying hello.");
-        var outputs = new List<string>();
+        
+        var answers = context.GetInput<List<string>>() ?? new List<string>();
 
-        // Replace name and input with values relevant for your Durable Functions Activity
-        outputs.Add(await context.CallActivityAsync<string>(nameof(SayHello), "Tokyo"));
-        outputs.Add(await context.CallActivityAsync<string>(nameof(SayHello), "Seattle"));
-        outputs.Add(await context.CallActivityAsync<string>(nameof(SayHello), "London"));
+        var value = await context.WaitForExternalEvent<(int index, string message, string replyToken)>("answer");
+        logger.LogInformation($"Orchestrator - index: {value.index}");
 
-        // returns ["Hello Tokyo!", "Hello Seattle!", "Hello London!"]
-        return outputs;
+        answers.Add(value.message);
+
+        if (value.index == -1)
+        {
+            await context.CallActivityAsync(
+                nameof(SendSummaryActivity),
+                (value.replyToken, answers));
+        }
+        else
+        {
+            context.SetCustomStatus(value.index);
+
+            await context.CallActivityAsync(
+                nameof(SendQuestionActivity),
+                (value.replyToken, value.index + 1));
+
+            context.ContinueAsNew(answers);
+        }
     }
 
-    [Function(nameof(SayHello))]
-    public static string SayHello([ActivityTrigger] string name, FunctionContext executionContext)
+    [Function(nameof(SendQuestionActivity))]
+    public async Task SendQuestionActivity(
+        [ActivityTrigger] (string replyToken, int index) input)
     {
-        ILogger logger = executionContext.GetLogger("SayHello");
-        logger.LogInformation("Saying hello to {name}.", name);
-        return $"Hello {name}!";
+        await _app.ReplyNextQuestionAsync(
+            input.replyToken,
+            input.index);
+    }
+    
+    public async Task SendSummaryActivity(
+        [ActivityTrigger] (string replyToken, List<string> answers) input)
+    {
+        await _app.ReplySummaryAsync(
+            input.replyToken,
+            input.answers);
     }
 
-    [Function("LineSimpleQuestionnaire_HttpStart")]
-    public static async Task<HttpResponseData> HttpStart(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")] HttpRequestData req,
+    [Function(nameof(HttpStart))]
+    public async Task<HttpResponseData> HttpStart(
+        [HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequestData req,
         [DurableClient] DurableTaskClient client,
         FunctionContext executionContext)
     {
-        ILogger logger = executionContext.GetLogger("LineSimpleQuestionnaire_HttpStart");
+        ILogger logger = executionContext.GetLogger(nameof(HttpStart));
 
-        // Function input comes from the request content.
-        string instanceId = await client.ScheduleNewOrchestrationInstanceAsync(
-            nameof(LineSimpleQuestionnaire));
+        _app.Logger = logger;
+        _app.DurableClient = client;
 
-        logger.LogInformation("Started orchestration with ID = '{instanceId}'.", instanceId);
+        await _app.RunAsync(
+            req.Headers.GetValues("x-line-signature").First(),
+            await req.ReadAsStringAsync());
 
-        // Returns an HTTP 202 response with an instance management payload.
-        // See https://learn.microsoft.com/azure/azure-functions/durable/durable-functions-http-api#start-orchestration
-        return await client.CreateCheckStatusResponseAsync(req, instanceId);
+        return req.CreateResponse(HttpStatusCode.OK);
     }
 }
