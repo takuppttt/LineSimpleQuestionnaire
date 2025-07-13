@@ -69,6 +69,9 @@ namespace LineSimpleQuestionnaire
                             e.Source.UserId,
                             "answer",
                             (index, textMessage.Text, e.ReplyToken));
+                        await Client.ReplyMessageAsync(
+                            e.ReplyToken,
+                            e.Source.UserId);
                     }
                     else
                     {
