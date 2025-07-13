@@ -38,7 +38,7 @@ namespace LineSimpleQuestionnaire
                 {
                     await DurableClient.PurgeInstanceAsync(e.Source.UserId);
                     await DurableClient.ScheduleNewOrchestrationInstanceAsync(
-                        nameof(LineSimpleQuestionnaire.RunOrchestrator),
+                        nameof(LineSimpleQuestionnaire),
                         e.Source.UserId);
 
                     await ReplyNextQuestionAsync(e.ReplyToken, 0);
@@ -57,8 +57,7 @@ namespace LineSimpleQuestionnaire
                             (-1, textMessage.Text, e.ReplyToken));
                     }
 
-                    if (status?.RuntimeStatus == OrchestrationRuntimeStatus.ContinuedAsNew
-                        || status?.RuntimeStatus == OrchestrationRuntimeStatus.Pending
+                    if (status?.RuntimeStatus == OrchestrationRuntimeStatus.Pending
                         || status?.RuntimeStatus == OrchestrationRuntimeStatus.Running)
                     {
                         await DurableClient.RaiseEventAsync(
