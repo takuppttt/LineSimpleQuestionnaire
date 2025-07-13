@@ -28,7 +28,7 @@ public class LineSimpleQuestionnaire
 
         var value = await context.WaitForExternalEvent<(int index, string message, string replyToken)>("answer");
         logger.LogInformation($"Orchestrator - index: {value.index}");
-        throw new Exception(JsonSerializer.Serialize(value));
+        throw new Exception($"Orchestrator - index: {value.index}, {value.message}, {value.replyToken}");
 
         answers.Add(value.message);
 
