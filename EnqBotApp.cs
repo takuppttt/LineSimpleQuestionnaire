@@ -8,7 +8,6 @@ using LineDC.Messaging.Webhooks.Messages;
 using Microsoft.DurableTask;
 using Microsoft.DurableTask.Client;
 using Microsoft.Extensions.Logging;
-using System.Text.Json;
 
 namespace LineSimpleQuestionnaire
 {
@@ -52,20 +51,7 @@ namespace LineSimpleQuestionnaire
                 else
                 {
                     var status = await DurableClient.GetInstanceAsync(e.Source.UserId);
-                    await Client.ReplyMessageAsync(
-                        e.ReplyToken,
-                        JsonSerializer.Serialize(status));
-                    var index = 0;
-                    try
-                    {
-                        index = int.TryParse(status?.SerializedCustomStatus?.ToString(), out var before) ? before + 1 : 0;
-                    }
-                    catch (Exception ex)
-                    {
-                        await Client.ReplyMessageAsync(
-                        e.ReplyToken,
-                        ex.ToString());
-                    }
+                    var index = int.TryParse(status?.SerializedCustomStatus?.ToString(), out var before) ? before + 1 : 0;
                     Logger.LogInformation($"OnMessageAsync - index: {index}");
 
                     if (_enq.Count == index + 1)
