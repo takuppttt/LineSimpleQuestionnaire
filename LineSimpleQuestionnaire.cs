@@ -1,8 +1,10 @@
+using LineDC.Messaging.Messages;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.DurableTask;
 using Microsoft.DurableTask.Client;
 using Microsoft.Extensions.Logging;
+using System;
 using System.Net;
 using System.Text.Json;
 
@@ -27,6 +29,7 @@ public class LineSimpleQuestionnaire
         var answers = context.GetInput<List<string>>() ?? new List<string>();
 
         var value = JsonSerializer.Deserialize<Answer>(await context.WaitForExternalEvent<string>("answer"));
+        throw new Exception($"index: {value.Index}, message: {value.Message}, replytoken: {value.ReplyToken}");
         logger.LogInformation($"Orchestrator - index: {value.Index}");
 
         answers.Add(value.Message);
