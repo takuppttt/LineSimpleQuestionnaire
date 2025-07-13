@@ -52,9 +52,6 @@ namespace LineSimpleQuestionnaire
                 else
                 {
                     var status = await DurableClient.GetInstanceAsync(e.Source.UserId);
-                    await Client.ReplyMessageAsync(
-                        e.ReplyToken,
-                        JsonSerializer.Serialize(status));
                     var index = (status?.ReadCustomStatusAs<int>() ?? -1) + 1;
                     Logger.LogInformation($"OnMessageAsync - index: {index}");
 
