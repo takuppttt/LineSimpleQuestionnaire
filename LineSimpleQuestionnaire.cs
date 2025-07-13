@@ -26,25 +26,24 @@ public class LineSimpleQuestionnaire
         
         var answers = context.GetInput<List<string>>() ?? new List<string>();
 
-        var value = await context.WaitForExternalEvent<(int index, string message, string replyToken)>("answer");
-        logger.LogInformation($"Orchestrator - index: {value.index}");
-        throw new Exception($"Orchestrator - index: {value.index}, {value.message}, {value.replyToken}");
+        var value = await context.WaitForExternalEvent<Answer>("answer");
+        logger.LogInformation($"Orchestrator - index: {value.Index}");
 
-        answers.Add(value.message);
+        answers.Add(value.Message);
 
-        if (value.index == -1)
+        if (value.Index == -1)
         {
             await context.CallActivityAsync(
                 nameof(SendSummaryActivity),
-                (value.replyToken, answers));
+                (value.ReplyToken, answers));
         }
         else
         {
-            context.SetCustomStatus(value.index);
+            context.SetCustomStatus(value.Index);
 
             await context.CallActivityAsync(
                 nameof(SendQuestionActivity),
-                (value.replyToken, value.index + 1));
+                (value.ReplyToken, value.Index + 1));
 
             context.ContinueAsNew(answers);
         }

@@ -60,7 +60,7 @@ namespace LineSimpleQuestionnaire
                         await DurableClient.RaiseEventAsync(
                             e.Source.UserId,
                             "answer",
-                            (-1, textMessage.Text, e.ReplyToken));
+                            new Answer(-1, textMessage.Text, e.ReplyToken));
                     }
 
                     if (status?.RuntimeStatus == OrchestrationRuntimeStatus.Pending
@@ -69,7 +69,7 @@ namespace LineSimpleQuestionnaire
                         await DurableClient.RaiseEventAsync(
                             e.Source.UserId,
                             "answer",
-                            (index, textMessage.Text, e.ReplyToken));
+                            new Answer(index, textMessage.Text, e.ReplyToken));
                     }
                     else
                     {
