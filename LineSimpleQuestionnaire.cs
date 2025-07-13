@@ -29,7 +29,6 @@ public class LineSimpleQuestionnaire
         var answers = context.GetInput<List<string>>() ?? new List<string>();
 
         var value = JsonSerializer.Deserialize<Answer>(await context.WaitForExternalEvent<string>("answer"));
-        throw new Exception($"index: {value.Index}, message: {value.Message}, replytoken: {value.ReplyToken}");
         logger.LogInformation($"Orchestrator - index: {value.Index}");
 
         answers.Add(value.Message);
@@ -38,7 +37,12 @@ public class LineSimpleQuestionnaire
         {
             await context.CallActivityAsync(
                 nameof(SendSummaryActivity),
-                (value.ReplyToken, answers));
+                JsonSerializer.Serialize(
+                    new SendSummaryPayload
+                    {
+                        ReplyToken = value.ReplyToken,
+                        Answers = answers
+                    }));
         }
         else
         {
@@ -46,7 +50,12 @@ public class LineSimpleQuestionnaire
 
             await context.CallActivityAsync(
                 nameof(SendQuestionActivity),
-                (value.ReplyToken, value.Index + 1));
+                JsonSerializer.Serialize(
+                    new SendQuestionPayload
+                    {
+                        Index = value.Index + 1,
+                        ReplyToken = value.ReplyToken
+                    }));
 
             context.ContinueAsNew(answers);
         }
@@ -54,19 +63,21 @@ public class LineSimpleQuestionnaire
 
     [Function(nameof(SendQuestionActivity))]
     public async Task SendQuestionActivity(
-        [ActivityTrigger] (string replyToken, int index) input)
+        [ActivityTrigger] string input)
     {
+        var payload = JsonSerializer.Deserialize<SendQuestionPayload>(input);
         await _app.ReplyNextQuestionAsync(
-            input.replyToken,
-            input.index);
+            payload.ReplyToken,
+            payload.Index);
     }
     
     public async Task SendSummaryActivity(
-        [ActivityTrigger] (string replyToken, List<string> answers) input)
+        [ActivityTrigger] string input)
     {
+        var payload = JsonSerializer.Deserialize<SendSummaryPayload>(input);
         await _app.ReplySummaryAsync(
-            input.replyToken,
-            input.answers);
+            payload.ReplyToken,
+            payload.Answers);
     }
 
     [Function(nameof(HttpStart))]
