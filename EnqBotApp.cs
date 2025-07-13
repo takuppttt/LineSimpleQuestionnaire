@@ -111,7 +111,22 @@ namespace LineSimpleQuestionnaire
             int index)
         {
             var next = _enq[index];
-            throw new Exception(JsonSerializer.Serialize(next));
+            if (index != 0)
+            {
+                throw new Exception(JsonSerializer.Serialize(new
+                {
+                    replyToken,
+                    messages = new List<ISendMessage>
+                    {
+                        next.quickReply != null
+                        ? new TextMessage(
+                            next.question,
+                            new QuickReply(next.quickReply.Select(
+                                q => new QuickReplyButtonObject(new MessageTemplateAction(q, q))).ToList()))
+                        : new TextMessage(next.question)
+                    }
+                }));
+            }
 
             await Client.ReplyMessageAsync(
                 replyToken,
