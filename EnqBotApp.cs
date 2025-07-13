@@ -57,6 +57,9 @@ namespace LineSimpleQuestionnaire
                         JsonSerializer.Serialize(status));
                     var index = int.TryParse(status?.SerializedCustomStatus?.ToString(), out var before) ? before + 1 : 0;
                     Logger.LogInformation($"OnMessageAsync - index: {index}");
+                    await Client.ReplyMessageAsync(
+                        e.ReplyToken,
+                        $"OnMessageAsync - index: {index}");
 
                     if (_enq.Count == index + 1)
                     {
