@@ -98,7 +98,7 @@ namespace LineSimpleQuestionnaire
                     await Client.ReplyMessageAsync(
                         e.ReplyToken,
                         Environment.GetEnvironmentVariable("THANKS1"),
-                        Environment.GetEnvironmentVariable("THANKS2"));
+                        Environment.GetEnvironmentVariable("THANKS2").Replace("\\n", "\n"));
                     await DurableClient.PurgeInstanceAsync(e.Source.UserId);
                     break;
                 case "cancel":
