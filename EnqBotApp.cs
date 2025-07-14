@@ -24,7 +24,7 @@ namespace LineSimpleQuestionnaire
         {
         }
 
-        private List<(string question, string[] quickReply)> _enq = new List<(string, string[])>
+        private List<(string question, string[] reply)> _enq = new List<(string, string[])>
         {
             ($"Q1. {Environment.GetEnvironmentVariable("QUESTION1")}", new [] { $"①{Environment.GetEnvironmentVariable("OPTION1_1")}", $"②{Environment.GetEnvironmentVariable("OPTION1_2")}" }),
         };
@@ -120,12 +120,31 @@ namespace LineSimpleQuestionnaire
                 replyToken,
                 new List<ISendMessage>
                 {
-                    next.quickReply != null
-                    ? new TextMessage(
-                        next.question,
-                        new QuickReply(next.quickReply.Select(
-                            q => new QuickReplyButtonObject(new MessageTemplateAction(q, q))).ToList()))
-                    : new TextMessage(next.question)
+                    FlexMessage
+                    .CreateBubbleMessage("設問")
+                    .SetBubbleContainer(
+                        new BubbleContainer()
+                        .SetHeader(BoxLayout.Horizontal)
+                        .AddHeaderContents(
+                            new TextComponent
+                            {
+                                Text = next.question,
+                                Align = Align.Center,
+                                Weight = Weight.Bold,
+                                Color = ColorCode.LightGray,
+                            })
+                        .SetBody(
+                            new BoxComponent
+                            {
+                                Layout = BoxLayout.Vertical,
+                                Contents =
+                                    next.reply
+                                    .Select(r => new ButtonComponent
+                                    {
+                                        Action = new MessageTemplateAction(r, r)
+                                    }).ToArray()
+
+                            }))
                 });
         }
 
