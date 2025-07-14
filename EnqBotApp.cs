@@ -140,9 +140,6 @@ namespace LineSimpleQuestionnaire
             List<string> answers)
         {
             await Client.ReplyMessageAsync(
-                        replyToken,
-                        string.Join(",", answers));
-            await Client.ReplyMessageAsync(
                 replyToken,
                 new List<ISendMessage>
                 {
