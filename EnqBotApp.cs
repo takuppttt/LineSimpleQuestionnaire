@@ -131,7 +131,6 @@ namespace LineSimpleQuestionnaire
                                 Text = next.question,
                                 Align = Align.Center,
                                 Weight = Weight.Bold,
-                                Color = ColorCode.LightGray,
                             })
                         .SetBody(
                             new BoxComponent
@@ -162,11 +161,25 @@ namespace LineSimpleQuestionnaire
                         new BubbleContainer()
                         .SetHeader(BoxLayout.Horizontal)
                         .AddHeaderContents(
-                            new TextComponent
+                            new BoxComponent
                             {
-                                Text = "以下の内容でよろしいですか？",
-                                Align = Align.Center,
-                                Weight = Weight.Bold,
+                                Layout = BoxLayout.Vertical,
+                                Contents = new IFlexComponent[]
+                                {
+                                    new TextComponent
+                                    {
+                                        Text = "入力内容の確認",
+                                        Align = Align.Start,
+                                        Weight = Weight.Bold,
+                                        Size = ComponentSize.Lg
+                                    },
+                                    new TextComponent
+                                    {
+                                        Text = "修正する場合は「修正」ボタンをタップしてください。",
+                                        Align = Align.Start,
+                                        Color = ColorCode.DarkGray
+                                    }
+                                }
                             })
                         .SetBody(
                             new BoxComponent
@@ -184,16 +197,32 @@ namespace LineSimpleQuestionnaire
                                                 Text = p.question,
                                                 Size = ComponentSize.Xs,
                                                 Align = Align.Start,
-                                                Weight = Weight.Bold,
+                                                Color = ColorCode.Gray,
                                             },
-                                            new TextComponent
+                                            new BoxComponent
                                             {
-                                                Text = p.answer,
-                                                Align = Align.Start,
+                                                Layout = BoxLayout.Horizontal,
+                                                Contents = new IFlexComponent[]
+                                                {
+                                                    new TextComponent
+                                                    {
+                                                        Text = p.answer,
+                                                        Size = ComponentSize.Xs,
+                                                        Align = Align.Start,
+                                                        Weight = Weight.Bold,
+                                                    },
+                                                    new ButtonComponent
+                                                    {
+                                                        Color = ColorCode.Green,
+                                                        Action = new PostbackTemplateAction(
+                                                            "修正",
+                                                            "cancel")
+                                                    }
+                                                }
                                             }
                                         }
                                     }).ToArray()
-                                
+
                             })
                         .SetFooter(
                             new BoxComponent
@@ -206,12 +235,6 @@ namespace LineSimpleQuestionnaire
                                         Action = new PostbackTemplateAction(
                                             "送信する",
                                             "send")
-                                    },
-                                    new ButtonComponent
-                                    {
-                                        Action = new PostbackTemplateAction(
-                                            "やり直す",
-                                            "cancel")
                                     }
                                 }
                             }))
