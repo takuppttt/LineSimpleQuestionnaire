@@ -26,10 +26,7 @@ namespace LineSimpleQuestionnaire
 
         private List<(string question, string[] quickReply)> _enq = new List<(string, string[])>
         {
-            ("Azure は好きですか？", new [] { "はい", "Yes" }),
-            ("Azure Functions は好きですか？", new [] { "はい", "もちろん", "大好きです" }),
-            ("Web Apps は？", new [] { "好きです", "大好きです" }),
-            ("Azure で好きなサービスは？", null)
+            ($"Q1. {Environment.GetEnvironmentVariable("QUESTION1")}", new [] { $"①{Environment.GetEnvironmentVariable("OPTION1_1")}", $"②{Environment.GetEnvironmentVariable("OPTION1_2")}" }),
         };
 
         protected override async Task OnMessageAsync(MessageEvent e)
@@ -100,7 +97,8 @@ namespace LineSimpleQuestionnaire
                 case "send":
                     await Client.ReplyMessageAsync(
                         e.ReplyToken,
-                        "回答ありがとうございました。");
+                        Environment.GetEnvironmentVariable("THANKS1"),
+                        Environment.GetEnvironmentVariable("THANKS2"));
                     await DurableClient.PurgeInstanceAsync(e.Source.UserId);
                     break;
                 case "cancel":
