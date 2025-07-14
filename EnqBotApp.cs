@@ -36,8 +36,56 @@ namespace LineSimpleQuestionnaire
         {
             if (e.Message is TextEventMessage textMessage)
             {
-                if (textMessage.Text == "アンケート開始")
+                var status = await DurableClient.GetInstanceAsync(e.Source.UserId, getInputsAndOutputs: true);
+                var index = (status?.ReadCustomStatusAs<QuestionIndex>() ?? new QuestionIndex { Index = -1 }).Index + 1;
+                Logger.LogInformation($"OnMessageAsync - index: {index}");
+
+                if (_enq.Count == index + 1)
                 {
+                    await DurableClient.RaiseEventAsync(
+                        e.Source.UserId,
+                        "answer",
+                        JsonSerializer.Serialize(new Answer
+                        {
+                            Index = -1,
+                            Message = textMessage.Text,
+                            ReplyToken = e.ReplyToken
+                        }));
+                }
+
+                if (status?.RuntimeStatus == OrchestrationRuntimeStatus.Pending
+                    || status?.RuntimeStatus == OrchestrationRuntimeStatus.Running)
+                {
+                    await DurableClient.RaiseEventAsync(
+                        e.Source.UserId,
+                        "answer",
+                        JsonSerializer.Serialize(new Answer
+                        {
+                            Index = index,
+                            Message = textMessage.Text,
+                            ReplyToken = e.ReplyToken
+                        }));
+                }
+                else
+                {
+                    await Client.ReplyMessageAsync(
+                        e.ReplyToken,
+                        "リッチメニューの右上を押してね");
+                }
+            }
+            else
+            {
+                await Client.ReplyMessageAsync(
+                    e.ReplyToken,
+                    "リッチメニューの右上を押してね");
+            }
+        }
+
+        protected override async Task OnPostbackAsync(PostbackEvent e)
+        {
+            switch (e.Postback.Data)
+            {
+                case "start":
                     await DurableClient.PurgeInstanceAsync(e.Source.UserId);
                     await DurableClient.ScheduleNewOrchestrationInstanceAsync(
                         nameof(LineSimpleQuestionnaire),
@@ -48,59 +96,7 @@ namespace LineSimpleQuestionnaire
                         });
 
                     await ReplyNextQuestionAsync(e.ReplyToken, 0);
-                }
-                else
-                {
-                    var status = await DurableClient.GetInstanceAsync(e.Source.UserId, getInputsAndOutputs: true);
-                    var index = (status?.ReadCustomStatusAs<QuestionIndex>() ?? new QuestionIndex { Index = -1 } ).Index + 1;
-                    Logger.LogInformation($"OnMessageAsync - index: {index}");
-
-                    if (_enq.Count == index + 1)
-                    {
-                        await DurableClient.RaiseEventAsync(
-                            e.Source.UserId,
-                            "answer",
-                            JsonSerializer.Serialize(new Answer
-                            {
-                                Index = -1,
-                                Message = textMessage.Text,
-                                ReplyToken = e.ReplyToken
-                            }));
-                    }
-
-                    if (status?.RuntimeStatus == OrchestrationRuntimeStatus.Pending
-                        || status?.RuntimeStatus == OrchestrationRuntimeStatus.Running)
-                    {
-                        await DurableClient.RaiseEventAsync(
-                            e.Source.UserId,
-                            "answer",
-                            JsonSerializer.Serialize(new Answer
-                            {
-                                Index = index,
-                                Message = textMessage.Text,
-                                ReplyToken = e.ReplyToken
-                            }));
-                    }
-                    else
-                    {
-                        await Client.ReplyMessageAsync(
-                            e.ReplyToken,
-                            "「アンケート開始」と送ってね");
-                    }
-                }
-            }
-            else
-            {
-                await Client.ReplyMessageAsync(
-                    e.ReplyToken,
-                    "「アンケート開始」と送ってね");
-            }
-        }
-
-        protected override async Task OnPostbackAsync(PostbackEvent e)
-        {
-            switch (e.Postback.Data)
-            {
+                    break;
                 case "send":
                     await Client.ReplyMessageAsync(
                         e.ReplyToken,
@@ -110,7 +106,7 @@ namespace LineSimpleQuestionnaire
                 case "cancel":
                     await Client.ReplyMessageAsync(
                         e.ReplyToken,
-                        "回答をキャンセルしました。もう一度回答する場合は「アンケート開始と送ってください。」");
+                        "回答をキャンセルしました。もう一度回答する場合はリッチメニューの右上を押してね");
                     await DurableClient.PurgeInstanceAsync(e.Source.UserId);
                     break;
             }
