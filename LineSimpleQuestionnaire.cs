@@ -70,7 +70,8 @@ public class LineSimpleQuestionnaire
             payload.ReplyToken,
             payload.Index);
     }
-    
+
+    [Function(nameof(SendSummaryActivity))]
     public async Task SendSummaryActivity(
         [ActivityTrigger] string input)
     {
